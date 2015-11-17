@@ -1,8 +1,11 @@
-import dejavu.fingerprint as fingerprint
+from memory_profiler import profile
+@profile
+import time
+
 import dejavu.decoder as decoder
+import dejavu.fingerprint as fingerprint
 import numpy as np
 import pyaudio
-import time
 
 
 class BaseRecognizer(object):
@@ -12,6 +15,7 @@ class BaseRecognizer(object):
         self.Fs = fingerprint.DEFAULT_FS
 
     def _recognize(self, *data):
+        print "_recognize"
         matches = []
         for d in data:
             matches.extend(self.dejavu.find_matches(d, Fs=self.Fs))
@@ -42,7 +46,8 @@ class FileRecognizer(BaseRecognizer):
 
 
 class MicrophoneRecognizer(BaseRecognizer):
-    default_chunksize   = 8192
+#    default_chunksize   = 8192
+    default_chunksize   = 1024
     default_format      = pyaudio.paInt16
     default_channels    = 2
     default_samplerate  = 44100
@@ -68,6 +73,7 @@ class MicrophoneRecognizer(BaseRecognizer):
         if self.stream:
             self.stream.stop_stream()
             self.stream.close()
+        print "start rec"
 
         self.stream = self.audio.open(
             format=self.default_format,
@@ -80,26 +86,31 @@ class MicrophoneRecognizer(BaseRecognizer):
         self.data = [[] for i in range(channels)]
 
     def process_recording(self):
+        print "process_recording"
         data = self.stream.read(self.chunksize)
         nums = np.fromstring(data, np.int16)
         for c in range(self.channels):
             self.data[c].extend(nums[c::self.channels])
 
     def stop_recording(self):
+        print "stop_recording"
         self.stream.stop_stream()
         self.stream.close()
         self.stream = None
         self.recorded = True
 
     def recognize_recording(self):
+        print "recognize_recording"
         if not self.recorded:
             raise NoRecordingError("Recording was not complete/begun")
         return self._recognize(*self.data)
 
     def get_recorded_time(self):
+        print "get_recorded_time"
         return len(self.data[0]) / self.rate
 
     def recognize(self, seconds=10):
+        print "recognize"
         self.start_recording()
         for i in range(0, int(self.samplerate / self.chunksize
                               * seconds)):

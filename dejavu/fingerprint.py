@@ -1,3 +1,4 @@
+from memory_profiler import profile
 import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
@@ -6,6 +7,8 @@ from scipy.ndimage.morphology import (generate_binary_structure,
                                       iterate_structure, binary_erosion)
 import hashlib
 from operator import itemgetter
+
+@profile
 
 IDX_FREQ_I = 0
 IDX_TIME_J = 1
@@ -17,7 +20,8 @@ DEFAULT_FS = 44100
 
 ######################################################################
 # Size of the FFT window, affects frequency granularity
-DEFAULT_WINDOW_SIZE = 4096
+#DEFAULT_WINDOW_SIZE = 4096
+DEFAULT_WINDOW_SIZE = 1024
 
 ######################################################################
 # Ratio by which each sequential window overlaps the last and the
@@ -28,7 +32,9 @@ DEFAULT_OVERLAP_RATIO = 0.5
 ######################################################################
 # Degree to which a fingerprint can be paired with its neighbors --
 # higher will cause more fingerprints, but potentially better accuracy.
-DEFAULT_FAN_VALUE = 15
+
+#DEFAULT_FAN_VALUE = 15
+DEFAULT_FAN_VALUE = 20
 
 ######################################################################
 # Minimum amplitude in spectrogram in order to be considered a peak.
@@ -59,13 +65,16 @@ PEAK_SORT = True
 # Number of bits to throw away from the front of the SHA1 hash in the
 # fingerprint calculation. The more you throw away, the less storage, but
 # potentially higher collisions and misclassifications when identifying songs.
-FINGERPRINT_REDUCTION = 20
+
+#FINGERPRINT_REDUCTION = 20
+FINGERPRINT_REDUCTION = 0
 
 def fingerprint(channel_samples, Fs=DEFAULT_FS,
                 wsize=DEFAULT_WINDOW_SIZE,
                 wratio=DEFAULT_OVERLAP_RATIO,
                 fan_value=DEFAULT_FAN_VALUE,
                 amp_min=DEFAULT_AMP_MIN):
+    print "fingerprint"
     """
     FFT the channel, log transform output, find local maxima, then return
     locally sensitive hashes.
@@ -82,9 +91,12 @@ def fingerprint(channel_samples, Fs=DEFAULT_FS,
     arr2D = 10 * np.log10(arr2D)
     arr2D[arr2D == -np.inf] = 0  # replace infs with zeros
 
+    print arr2D
+
     # find local maxima
     local_maxima = get_2D_peaks(arr2D, plot=False, amp_min=amp_min)
 
+    print local_maxima
     # return hashes
     return generate_hashes(local_maxima, fan_value=fan_value)
 
