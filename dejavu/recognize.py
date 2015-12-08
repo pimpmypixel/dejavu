@@ -1,18 +1,20 @@
-from memory_profiler import profile
-@profile
 import time
-
-import dejavu.decoder as decoder
-import dejavu.fingerprint as fingerprint
+import os.path
 import numpy as np
 import pyaudio
+import json
+
+import dejavu.decoder as decoder
+
+
+with open(os.path.dirname(__file__) + '/../bassment.cnf') as f:
+    config = json.load(f)
 
 
 class BaseRecognizer(object):
-
     def __init__(self, dejavu):
         self.dejavu = dejavu
-        self.Fs = fingerprint.DEFAULT_FS
+        self.Fs = config["fingerprint"]["fs"]
 
     def _recognize(self, *data):
         print "_recognize"
@@ -46,51 +48,39 @@ class FileRecognizer(BaseRecognizer):
 
 
 class MicrophoneRecognizer(BaseRecognizer):
-#    default_chunksize   = 8192
-    default_chunksize   = 1024
-    default_format      = pyaudio.paInt16
-    default_channels    = 2
-    default_samplerate  = 44100
+    print "mic recognize"
+    default_format = pyaudio.paInt16
 
     def __init__(self, dejavu):
         super(MicrophoneRecognizer, self).__init__(dejavu)
         self.audio = pyaudio.PyAudio()
         self.stream = None
         self.data = []
-        self.channels = MicrophoneRecognizer.default_channels
-        self.chunksize = MicrophoneRecognizer.default_chunksize
-        self.samplerate = MicrophoneRecognizer.default_samplerate
         self.recorded = False
 
-    def start_recording(self, channels=default_channels,
-                        samplerate=default_samplerate,
-                        chunksize=default_chunksize):
-        self.chunksize = chunksize
-        self.channels = channels
-        self.recorded = False
-        self.samplerate = samplerate
-
+    def start_recording(self):
         if self.stream:
             self.stream.stop_stream()
             self.stream.close()
         print "start rec"
 
         self.stream = self.audio.open(
-            format=self.default_format,
-            channels=channels,
-            rate=samplerate,
             input=True,
-            frames_per_buffer=chunksize,
+            format=self.default_format,
+            channels=config["recognize"]["channels"],
+            rate=config["recognize"]["samplerate"],
+            frames_per_buffer=config["recognize"]["chunksize"],
+            input_device_index=config["recognize"]["device"]
         )
 
-        self.data = [[] for i in range(channels)]
+        self.data = [[] for i in range(config["recognize"]["channels"])]
 
     def process_recording(self):
         print "process_recording"
-        data = self.stream.read(self.chunksize)
+        data = self.stream.read(config["recognize"]["chunksize"])
         nums = np.fromstring(data, np.int16)
-        for c in range(self.channels):
-            self.data[c].extend(nums[c::self.channels])
+        for c in range(config["recognize"]["channels"]):
+            self.data[c].extend(nums[c::config["recognize"]["channels"]])
 
     def stop_recording(self):
         print "stop_recording"
@@ -112,8 +102,7 @@ class MicrophoneRecognizer(BaseRecognizer):
     def recognize(self, seconds=10):
         print "recognize"
         self.start_recording()
-        for i in range(0, int(self.samplerate / self.chunksize
-                              * seconds)):
+        for i in range(0, int(config["recognize"]["samplerate"] / config["recognize"]["chunksize"] * seconds)):
             self.process_recording()
         self.stop_recording()
         return self.recognize_recording()

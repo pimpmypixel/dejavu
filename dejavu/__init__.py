@@ -1,14 +1,19 @@
-from dejavu.database import get_database, Database
-import dejavu.decoder as decoder
-import fingerprint
 import multiprocessing
 import os
 import traceback
 import sys
+import json
+
+from dejavu.database import get_database, Database
+import dejavu.decoder as decoder
+import fingerprint
+
+
+with open(os.path.dirname(__file__) + '/../bassment.cnf') as f:
+    config = json.load(f)
 
 
 class Dejavu(object):
-
     SONG_ID = "song_id"
     SONG_NAME = 'song_name'
     CONFIDENCE = 'confidence'
@@ -97,7 +102,7 @@ class Dejavu(object):
         songname = decoder.path_to_songname(filepath)
         song_hash = decoder.unique_hash(filepath)
         song_name = song_name or songname
-        # don't refingerprint already fingerprinted files
+
         if song_hash in self.songhashes_set:
             print "%s already fingerprinted, continuing..." % song_name
         else:
@@ -112,8 +117,8 @@ class Dejavu(object):
             self.db.set_song_fingerprinted(sid)
             self.get_fingerprinted_songs()
 
-    def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):
-        hashes = fingerprint.fingerprint(samples, Fs=Fs)
+    def find_matches(self, samples):
+        hashes = fingerprint.fingerprint(samples)
         return self.db.return_matches(hashes)
 
     def align_matches(self, matches):
@@ -154,12 +159,12 @@ class Dejavu(object):
                          fingerprint.DEFAULT_WINDOW_SIZE *
                          fingerprint.DEFAULT_OVERLAP_RATIO, 5)
         song = {
-            Dejavu.SONG_ID : song_id,
-            Dejavu.SONG_NAME : songname,
-            Dejavu.CONFIDENCE : largest_count,
-            Dejavu.OFFSET : int(largest),
-            Dejavu.OFFSET_SECS : nseconds,
-            Database.FIELD_FILE_SHA1 : song.get(Database.FIELD_FILE_SHA1, None),}
+            Dejavu.SONG_ID: song_id,
+            Dejavu.SONG_NAME: songname,
+            Dejavu.CONFIDENCE: largest_count,
+            Dejavu.OFFSET: int(largest),
+            Dejavu.OFFSET_SECS: nseconds,
+            Database.FIELD_FILE_SHA1: song.get(Database.FIELD_FILE_SHA1, None), }
         return song
 
     def recognize(self, recognizer, *options, **kwoptions):
