@@ -1,8 +1,9 @@
 from memory_profiler import profile
-@profile
+
 import json
 import time
 import warnings
+
 warnings.filterwarnings("ignore")
 
 from dejavu import Dejavu

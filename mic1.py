@@ -1,15 +1,15 @@
-import json
-# warnings.filterwarnings("ignore")
+import json, warnings
+warnings.filterwarnings("ignore")
 
 from dejavu import Dejavu
 from dejavu.recognize import MicrophoneRecognizer
 
-with open("dejavu.cnf.SAMPLE") as f:
+with open("bassment.cnf") as f:
     config = json.load(f)
 
 if __name__ == '__main__':
     djv = Dejavu(config)
-    secs = 2
+    secs = 1
     song = djv.recognize(MicrophoneRecognizer, seconds=secs)
     if song is None:
         print "Nothing recognized"
