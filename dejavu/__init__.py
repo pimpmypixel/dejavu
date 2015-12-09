@@ -1,14 +1,15 @@
-from dejavu.database import get_database, Database
-import dejavu.decoder as decoder
-import fingerprint
 import multiprocessing
 import os
 import traceback
 import sys
+from datetime import datetime
+
+from dejavu.database import get_database, Database
+import dejavu.decoder as decoder
+import fingerprint
 
 
 class Dejavu(object):
-
     SONG_ID = "song_id"
     SONG_NAME = 'song_name'
     CONFIDENCE = 'confidence'
@@ -112,11 +113,12 @@ class Dejavu(object):
             self.db.set_song_fingerprinted(sid)
             self.get_fingerprinted_songs()
 
-    def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):
-        hashes = fingerprint.fingerprint(samples, Fs=Fs)
+    def find_matches(self, samples, starttime, Fs=fingerprint.DEFAULT_FS):
+        print str(datetime.now() - starttime) + " - find_matches"
+        hashes = fingerprint.fingerprint(samples, starttime, Fs=Fs)
         return self.db.return_matches(hashes)
 
-    def align_matches(self, matches):
+    def align_matches(self, matches, starttime):
         """
             Finds hash matches that align in time with other matches and finds
             consensus about which hashes are "true" signal from the audio.
@@ -124,6 +126,7 @@ class Dejavu(object):
             Returns a dictionary with match information.
         """
         # align by diffs
+        print str(datetime.now() - starttime) + " - align"
         diff_counter = {}
         largest = 0
         largest_count = 0
@@ -154,12 +157,12 @@ class Dejavu(object):
                          fingerprint.DEFAULT_WINDOW_SIZE *
                          fingerprint.DEFAULT_OVERLAP_RATIO, 5)
         song = {
-            Dejavu.SONG_ID : song_id,
-            Dejavu.SONG_NAME : songname,
-            Dejavu.CONFIDENCE : largest_count,
-            Dejavu.OFFSET : int(largest),
-            Dejavu.OFFSET_SECS : nseconds,
-            Database.FIELD_FILE_SHA1 : song.get(Database.FIELD_FILE_SHA1, None),}
+            Dejavu.SONG_ID: song_id,
+            Dejavu.SONG_NAME: songname,
+            Dejavu.CONFIDENCE: largest_count,
+            Dejavu.OFFSET: int(largest),
+            Dejavu.OFFSET_SECS: nseconds,
+            Database.FIELD_FILE_SHA1: song.get(Database.FIELD_FILE_SHA1, None), }
         return song
 
     def recognize(self, recognizer, *options, **kwoptions):

@@ -251,6 +251,7 @@ class SQLDatabase(Database):
         database (be careful with that one!).
         """
         # select all if no key
+        print(hash)
         query = self.SELECT_ALL if hash is None else self.SELECT
 
         with self.cursor() as cur:
