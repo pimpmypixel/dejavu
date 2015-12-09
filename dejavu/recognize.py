@@ -75,6 +75,7 @@ class MicrophoneRecognizer(BaseRecognizer):
             rate=samplerate,
             input=True,
             frames_per_buffer=chunksize,
+            #input_device_index=4
         )
 
         self.data = [[] for i in range(channels)]

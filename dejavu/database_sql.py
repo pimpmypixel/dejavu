@@ -225,6 +225,7 @@ class SQLDatabase(Database):
         """
         with self.cursor(cursor_type=DictCursor) as cur:
             cur.execute(self.SELECT_SONG, (sid,))
+            print sid
             return cur.fetchone()
 
     def insert(self, hash, sid, offset):

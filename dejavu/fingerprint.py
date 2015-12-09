@@ -78,6 +78,9 @@ def fingerprint(channel_samples, Fs=DEFAULT_FS,
         window=mlab.window_hanning,
         noverlap=int(wsize * wratio))[0]
 
+    #print arr2D
+
+
     # apply log transform since specgram() returns linear array
     arr2D = 10 * np.log10(arr2D)
     arr2D[arr2D == -np.inf] = 0  # replace infs with zeros
@@ -86,6 +89,7 @@ def fingerprint(channel_samples, Fs=DEFAULT_FS,
     local_maxima = get_2D_peaks(arr2D, plot=False, amp_min=amp_min)
 
     # return hashes
+    print local_maxima
     return generate_hashes(local_maxima, fan_value=fan_value)
 
 
