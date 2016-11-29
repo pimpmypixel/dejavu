@@ -9,41 +9,6 @@ from dejavu.database import Database
 
 
 class SQLDatabase(Database):
-    """
-    Queries:
-
-    1) Find duplicates (shouldn't be any, though):
-
-        select `hash`, `song_id`, `offset`, count(*) cnt
-        from fingerprints
-        group by `hash`, `song_id`, `offset`
-        having cnt > 1
-        order by cnt asc;
-
-    2) Get number of hashes by song:
-
-        select song_id, song_name, count(song_id) as num
-        from fingerprints
-        natural join songs
-        group by song_id
-        order by count(song_id) desc;
-
-    3) get hashes with highest number of collisions
-
-        select
-            hash,
-            count(distinct song_id) as n
-        from fingerprints
-        group by `hash`
-        order by n DESC;
-
-    => 26 different songs with same fingerprint (392 times):
-
-        select songs.song_name, fingerprints.offset
-        from fingerprints natural join songs
-        where fingerprints.hash = "08d3c833b71c60a7b620322ac0c0aba7bf5a3e73";
-    """
-
     type = "mysql"
 
     # tables

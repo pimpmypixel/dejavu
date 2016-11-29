@@ -2,6 +2,7 @@ import numpy as np
 import os.path
 import json
 from datetime import datetime
+#from memory_profiler import profiler
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import maximum_filter
@@ -61,23 +62,19 @@ def fingerprint(channel_samples,
 
     # return hashes
     # print local_maxima
-    return generate_hashes(local_maxima, fan_value=fan_value)
+    return generate_hashes(local_maxima, starttime, fan_value=fan_value)
 
 
 def get_2D_peaks(arr2D, starttime, plot=True, amp_min=DEFAULT_AMP_MIN):
-
     print str(datetime.now() - starttime) + " - get_2D_peaks start"
     # http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.morphology.iterate_structure.html#scipy.ndimage.morphology.iterate_structure
     struct = generate_binary_structure(2, 1)
     neighborhood = iterate_structure(struct, PEAK_NEIGHBORHOOD_SIZE)
 
-
-
-    # find local maxima using our fliter shape
+    # find local maxima using our filter shape
     print str(datetime.now() - starttime) + " - local maxima start"
     local_max = maximum_filter(arr2D, footprint=neighborhood) == arr2D
     background = (arr2D == 0)
-
 
     print str(datetime.now() - starttime) + " - binary_erosion start"
     eroded_background = binary_erosion(background, structure=neighborhood, border_value=1)
@@ -113,7 +110,8 @@ def get_2D_peaks(arr2D, starttime, plot=True, amp_min=DEFAULT_AMP_MIN):
     return zip(frequency_idx, time_idx)
 
 
-def generate_hashes(peaks, fan_value=DEFAULT_FAN_VALUE):
+#@profiler
+def generate_hashes(peaks, starttime, fan_value=DEFAULT_FAN_VALUE):
     """
     Hash list structure:
        sha1_hash[0:20]    time_offset
@@ -121,6 +119,8 @@ def generate_hashes(peaks, fan_value=DEFAULT_FAN_VALUE):
     """
     if PEAK_SORT:
         peaks.sort(key=itemgetter(1))
+
+    print str(datetime.now() - starttime) + " - generate_hashes start"
 
     for i in range(len(peaks)):
         for j in range(1, fan_value):

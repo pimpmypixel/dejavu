@@ -1,6 +1,7 @@
 import numpy as np
 import pyaudio
 import time
+#from memory_profiler import profile
 from datetime import datetime
 
 import dejavu.fingerprint as fingerprint
@@ -12,6 +13,7 @@ class BaseRecognizer(object):
         self.dejavu = dejavu
         self.Fs = fingerprint.DEFAULT_FS
 
+#    @profile
     def _recognize(self, starttime, *data):
         matches = []
         print str(datetime.now() - starttime) + " - _recognize"
@@ -46,7 +48,7 @@ class FileRecognizer(BaseRecognizer):
 class MicrophoneRecognizer(BaseRecognizer):
     default_chunksize = 8096
     default_format = pyaudio.paInt16
-    default_channels = 2
+    default_channels = 1
     default_samplerate = 44100
 
     def __init__(self, dejavu):
@@ -60,6 +62,7 @@ class MicrophoneRecognizer(BaseRecognizer):
         self.samplerate = MicrophoneRecognizer.default_samplerate
         self.recorded = False
 
+#    @profile
     def start_recording(self, channels=default_channels,
                         samplerate=default_samplerate,
                         chunksize=default_chunksize):

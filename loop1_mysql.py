@@ -13,6 +13,10 @@ from dejavu.recognize import MicrophoneRecognizer
 warnings.filterwarnings("ignore")
 db = "database.json"
 config = {}
+"""
+Get json file with database connection info
+to query the current config vars
+"""
 
 try:
     with open(db) as f:
@@ -29,6 +33,7 @@ try:
         active = cur.fetchone()
         cur.execute("SELECT * FROM `configurations` WHERE id = " + str(active['active']))
         config['fingerprint'] = cur.fetchone()
+
 
         if __name__ == '__main__':
             djv = Dejavu(config)
