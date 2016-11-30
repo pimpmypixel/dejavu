@@ -2,7 +2,7 @@ import numpy as np
 import os.path
 import json
 from datetime import datetime
-#from memory_profiler import profiler
+# from memory_profiler import profiler
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import maximum_filter
@@ -27,6 +27,7 @@ PEAK_NEIGHBORHOOD_SIZE = config["fingerprint"]["peak_neighborhood_size"]
 MIN_HASH_TIME_DELTA = config["fingerprint"]["min_hash_time_delta"]
 MAX_HASH_TIME_DELTA = config["fingerprint"]["max_hash_time_delta"]
 FINGERPRINT_REDUCTION = config["fingerprint"]["fingerprint_reduction"]
+
 
 def fingerprint(channel_samples,
                 starttime,
@@ -110,7 +111,7 @@ def get_2D_peaks(arr2D, starttime, plot=True, amp_min=DEFAULT_AMP_MIN):
     return zip(frequency_idx, time_idx)
 
 
-#@profiler
+# @profiler
 def generate_hashes(peaks, starttime, fan_value=DEFAULT_FAN_VALUE):
     """
     Hash list structure:
