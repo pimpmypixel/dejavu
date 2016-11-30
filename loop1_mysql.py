@@ -1,4 +1,5 @@
 import json
+import os.path
 import warnings
 import sys
 import time
@@ -9,9 +10,8 @@ import MySQLdb.cursors
 from dejavu import Dejavu
 from dejavu.recognize import MicrophoneRecognizer
 
-
 warnings.filterwarnings("ignore")
-db = "database.json"
+db = "conf/database.json"
 config = {}
 """
 Get json file with database connection info
@@ -19,7 +19,8 @@ to query the current config vars
 """
 
 try:
-    with open(db) as f:
+
+    with open(os.path.dirname(__file__)  + db) as f:
         config['database'] = json.load(f)
         con = MySQLdb.connect(
             config.get('database').get('host'),
@@ -29,11 +30,12 @@ try:
             cursorclass=MySQLdb.cursors.DictCursor
         )
         cur = con.cursor()
-        cur.execute("SELECT active FROM `states` ORDER BY id DESC limit 1")
-        active = cur.fetchone()
-        cur.execute("SELECT * FROM `configurations` WHERE id = " + str(active['active']))
+        #cur.execute("SELECT active FROM `states` ORDER BY id DESC limit 1")
+        #active = cur.fetchone()
+        #cur.execute("SELECT * FROM `configurations` WHERE id = " + str(active['active']))
+        cur.execute("SELECT * FROM `configurations` WHERE id = (SELECT active FROM `states` ORDER BY id DESC limit 1)")
         config['fingerprint'] = cur.fetchone()
-
+        print "Connected. Using config named: " + config['fingerprint']['name']
 
         if __name__ == '__main__':
             djv = Dejavu(config)

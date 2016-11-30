@@ -11,7 +11,7 @@ from scipy.ndimage.morphology import (generate_binary_structure,
 import hashlib
 from operator import itemgetter
 
-with open(os.path.dirname(__file__) + '/../settings.json') as f:
+with open(os.path.dirname(__file__) + '/../conf/settings.json') as f:
     config = json.load(f)
 
 IDX_FREQ_I = 0
