@@ -13,7 +13,7 @@ from dejavu import Dejavu
 from dejavu.recognize import MicrophoneRecognizer
 
 logger = logging.getLogger(__name__)
-warnings.filterwarnings("ignore")
+#warnings.filterwarnings("ignore")
 db = "conf/database.json"
 config = {}
 
@@ -31,7 +31,6 @@ def getConguration():
 		cur = con.cursor()
 		cur.execute("SELECT * FROM `configurations` WHERE id = (SELECT active FROM `states` ORDER BY id DESC limit 1)")
 		config['fingerprint'] = cur.fetchone()
-
 		config['fingerprint']['amp_min'] = 10
 		config['fingerprint']['plot'] = 0
 		config['verbose'] = False
@@ -39,6 +38,7 @@ def getConguration():
 			"chunksize": 8096,
 			"test": 1
 		}
+		logging.debug(config)
 		return config
 
 try:
