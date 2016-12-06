@@ -17,7 +17,6 @@ warnings.filterwarnings("ignore")
 db = "conf/database.json"
 config = {}
 
-
 def getConguration():
 	with open(os.path.dirname(__file__) + db) as f:
 		logging.debug("Getting config")
@@ -36,13 +35,11 @@ def getConguration():
 		config['fingerprint']['amp_min'] = 10
 		config['fingerprint']['plot'] = 0
 		config['verbose'] = False
-
 		config['soundcard'] = {
 			"chunksize": 8096,
 			"test": 1
 		}
 		return config
-
 
 try:
 	parser = argparse.ArgumentParser()
@@ -52,16 +49,13 @@ try:
 	levels = [logging.WARNING, logging.INFO, logging.DEBUG]
 	level_index = min(len(levels) - 1, args.verbose)
 	level = levels[level_index]  # capped to number of levels
-	logging.basicConfig(filename='log.log',
+	logging.basicConfig(filename='log/log.log',
 						filemode='a',
 						format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
 						datefmt='%H:%M:%S',
 						level=level)
-
 	config = getConguration()
-
 	logging.info("Using config '" + config['fingerprint']['name'] + "'")
-	
 
 	if __name__ == '__main__':
 		djv = Dejavu(config)
