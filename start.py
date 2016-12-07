@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import json
 import os.path
 import warnings
@@ -13,12 +15,13 @@ from dejavu import Dejavu
 from dejavu.recognize import MicrophoneRecognizer
 
 logger = logging.getLogger(__name__)
-#warnings.filterwarnings("ignore")
-db = "conf/database.json"
+warnings.filterwarnings("ignore")
+db = os.path.dirname(__file__) + "/conf/database.json"
+log = os.path.dirname(__file__) + "/log/log.log"
 config = {}
 
 def getConguration():
-	with open(os.path.dirname(__file__) + db) as f:
+	with open(db) as f:
 		logging.debug("Getting config")
 		config['database'] = json.load(f)
 		con = MySQLdb.connect(
@@ -49,7 +52,7 @@ try:
 	levels = [logging.WARNING, logging.INFO, logging.DEBUG]
 	level_index = min(len(levels) - 1, args.verbose)
 	level = levels[level_index]  # capped to number of levels
-	logging.basicConfig(filename='log/log.log',
+	logging.basicConfig(filename=log,
 						filemode='a',
 						format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
 						datefmt='%H:%M:%S',

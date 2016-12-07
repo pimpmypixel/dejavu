@@ -1,6 +1,6 @@
 {
-    "host": "10.0.0.16",
-    "user": "root",
-    "passwd": "lsd4you",
+    "host": "10.0.1.6",
+    "user": "adkiller",
+    "passwd": "adkiller",
     "db": "admin"
 }
