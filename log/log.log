@@ -7,3 +7,8 @@
 00:32:51,453 root DEBUG Getting config
 00:33:35,648 root DEBUG Getting config
 00:37:56,42 root DEBUG Getting config
+19:08:19,307 root INFO Error 2003: Can't connect to MySQL server on '10.0.1.6' (111)
+19:08:43,57 root INFO Error 2003: Can't connect to MySQL server on '10.0.1.6' (111)
+19:09:46,894 root INFO Error 2003: Can't connect to MySQL server on '10.0.1.6' (111)
+19:10:39,25 root INFO Error 2003: Can't connect to MySQL server on '10.0.1.6' (111)
+19:11:06,458 root INFO Error 2003: Can't connect to MySQL server on '10.0.1.6' (111)

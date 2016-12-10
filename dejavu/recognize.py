@@ -18,7 +18,7 @@ class BaseRecognizer(object):
 
 	def _recognize(self, *data):
 		matches = []
-		log.info('_recognize')
+		log.debug('_recognize')
 		for d in data:
 			matches.extend(
 				self.dejavu.find_matches(d))
@@ -36,7 +36,8 @@ class MicrophoneRecognizer(BaseRecognizer):
 	default_samplerate = 44100
 
 	def __init__(self, dejavu):
-		log.info('__init__ MicrophoneRecognizer')
+		#print vars(dejavu)
+		log.debug('__init__ MicrophoneRecognizer')
 		super(MicrophoneRecognizer, self).__init__(dejavu)
 		self.starttime = datetime.now()
 		self.audio = pyaudio.PyAudio()
@@ -47,10 +48,11 @@ class MicrophoneRecognizer(BaseRecognizer):
 		self.samplerate = MicrophoneRecognizer.default_samplerate
 		self.recorded = False
 
-	#    @profile
-	def start_recording(self, channels=default_channels,
+	def start_recording(self,
+						channels=default_channels,
 						samplerate=default_samplerate,
-						chunksize=default_chunksize):
+						chunksize=default_chunksize
+						):
 		self.chunksize = chunksize
 		self.channels = channels
 		self.recorded = False
@@ -69,7 +71,6 @@ class MicrophoneRecognizer(BaseRecognizer):
 			frames_per_buffer=self.chunksize,
 			input_device_index=1
 		)
-
 		self.data = [[] for i in range(channels)]
 
 	def process_recording(self):
@@ -87,13 +88,13 @@ class MicrophoneRecognizer(BaseRecognizer):
 		self.recorded = True
 
 	def recognize_recording(self):
-		log.info('recognize_recording')
+		log.debug('recognize_recording')
 		if not self.recorded:
 			raise NoRecordingError("Recording was not complete/begun")
 		return self._recognize(*self.data)
 
 	def get_recorded_time(self):
-		log.info('get_recorded_time')
+		log.debug('get_recorded_time')
 		return len(self.data[0]) / self.rate
 
 	def recognize(self, seconds=2):
