@@ -9,20 +9,17 @@ from dejavu.recognize import MicrophoneRecognizer
 import CHIP_IO.GPIO as GPIO
 import atexit
 import netifaces as ni
-import uuid
+import shortuuid
 import ipgetter
 import subprocess
 
-logger = logging.getLogger(__name__)
+config = {}
 warnings.filterwarnings("ignore")
 db = os.path.dirname(__file__) + "conf/database.json"
-log = os.path.dirname(__file__) + "log/log.log"
-config = {}
 
 
 def getConguration():
 	with open(db) as f:
-		logging.debug("Getting config")
 		config['database'] = json.load(f)
 		try:
 			con = MySQLdb.connect(
@@ -33,22 +30,21 @@ def getConguration():
 				cursorclass=MySQLdb.cursors.DictCursor
 			)
 			if (db):
-				print "Connection successful"
 				cur = con.cursor()
 				cur.execute(
 					"SELECT * FROM `configurations` WHERE id = (SELECT active FROM `states` ORDER BY id DESC limit 1)")
 				config['fingerprint'] = cur.fetchone()
-				config['session'] = uuid.uuid4()
+				config['session'] = shortuuid.uuid()
 				config['remote_ip'] = ipgetter.myip()
 				config['vpn_ip'] = ni.ifaddresses('tun0')[2][0]['addr']
+				print "Connected to " + str(config['vpn_ip'])
 				config['fingerprint']['amp_min'] = 10
 				config['fingerprint']['plot'] = 0
 				config['verbose'] = False
 				config['soundcard'] = {
 					"chunksize": 8096,
-					"test": 1
+					"channels": 1
 				}
-				logging.debug(config)
 				return config
 			else:
 				print "Connection unsuccessful"
@@ -57,32 +53,24 @@ def getConguration():
 			print "MySQL Error: %s" % str(e)
 
 
-def setupLed():
-	print("Testing LED XIO-P0 for 3 seconds")
+def blinkLed(blinks):
 	GPIO.setup("XIO-P0", GPIO.OUT)
-	GPIO.output("XIO-P0", GPIO.LOW)
-	time.sleep(3)
-	GPIO.output("XIO-P0", GPIO.HIGH)
-	GPIO.cleanup()
-
-
-def blinkLed():
-	GPIO.setup("XIO-P0", GPIO.OUT)
-	for j in range(1, 10):
+	for j in range(1, blinks):
 		GPIO.output("XIO-P0", GPIO.LOW)
-		time.sleep(.1)
+		time.sleep(0.05)
 		GPIO.output("XIO-P0", GPIO.HIGH)
-		time.sleep(.1)
+		time.sleep(0.05)
 	GPIO.cleanup()
 	return
 
 
 def exit_handler(djv):
-	print 'Session ended'
-	djv.log_event(config['session'], config['vpn_ip'], config['remote_ip'], 'end')
+	blinkLed(4)
+	djv.log_event('action', 'end')
 
 
 def check_vpn():
+	return True
 	hostname = "10.0.1.1"
 	try:
 		response = subprocess.check_output(
@@ -94,26 +82,15 @@ def check_vpn():
 		response = None
 	return response
 
+
 try:
-	setupLed()
+	blinkLed(10)
 	if check_vpn() is not None:
 		config = getConguration()
 		djv = Dejavu(config)
-		djv.log_event(config['session'], config['vpn_ip'], config['remote_ip'], 'boot')
+		djv.create_session(config['fingerprint']['id'], config['vpn_ip'], config['remote_ip'])
+		djv.log_event('action', 'boot')
 		atexit.register(exit_handler, djv)
-		parser = argparse.ArgumentParser()
-		parser.add_argument('-v', '--verbose', action='count', default=0)
-		args = parser.parse_args()
-		levels = [logging.WARNING, logging.INFO, logging.DEBUG]
-		level_index = min(len(levels) - 1, args.verbose)
-		level = levels[level_index]  # capped to number of levels
-		logging.basicConfig(filename=log, filemode='a', format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-							datefmt='%H:%M:%S', level=level)
-		# Get config
-		logging.info("Using config '" + config['fingerprint']['name'] + "'")
-		djv.log_event(config['session'], config['vpn_ip'], config['remote_ip'],
-					  'config: ' + str(config['fingerprint']['name']))
-
 		if __name__ == '__main__':
 			a = datetime.now()
 			listen = 1
@@ -121,17 +98,12 @@ try:
 			it = 1
 			try:
 				while True:
+					blinkLed(2)
 					song = djv.recognize(MicrophoneRecognizer, seconds=listen)
-					if song is None:
-						# print str(it) + " - Nothing recognized"
-						if args.verbose:
-							logging.info(str(it) + ". Nothing recognized")
-					else:
-						blinkLed()
-						djv.log_event(config['session'], config['vpn_ip'], config['remote_ip'], str(song['song_id']))
+					if song is not None:
+						djv.log_event('match', str(song['song_id']))
 						print "Recognized %s\n" % (song)
-						if args.verbose:
-							logging.info(str(it) + ". Recognized from mic with %d seconds: %s\n" % (listen, song))
+						blinkLed(5)
 					it += 1
 					time.sleep(pause)
 			except KeyboardInterrupt:
@@ -140,5 +112,5 @@ try:
 		print "No vpn connection"
 
 except MySQLdb.Error, e:
-	logging.info("Error %d: %s" % (e.args[0], e.args[1]))
+	djv.log_event('mysql_error', str(e.args[1]))
 	sys.exit(1)

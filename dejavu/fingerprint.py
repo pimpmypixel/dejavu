@@ -46,7 +46,6 @@ def fingerprint(channel_samples, config):
 
 # def get_2D_peaks(arr2D, starttime, plot=True, amp_min=DEFAULT_AMP_MIN):
 def get_2D_peaks(arr2D, config):
-    log.debug('fingerprint get_2D_peaks')
     # http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.morphology.iterate_structure.html#scipy.ndimage.morphology.iterate_structure
     struct = generate_binary_structure(2, 1)
     neighborhood = iterate_structure(struct, config["fingerprint"]["neighborhood_size"])
@@ -77,7 +76,6 @@ def get_2D_peaks(arr2D, config):
     time_idx = [x[0] for x in peaks_filtered]
 
     if config["fingerprint"]["plot"]:
-        log.debug('fingerprint plot start')
         # scatter of the peaks
         fig, ax = plt.subplots()
         ax.imshow(arr2D)
@@ -100,9 +98,6 @@ def generate_hashes(peaks, config):
     """
     if PEAK_SORT:
         peaks.sort(key=itemgetter(1))
-
-    log.debug('fingerprint generate_hashes start')
-
     for i in range(len(peaks)):
         for j in range(1, config["fingerprint"]["fan_value"]):
             if (i + j) < len(peaks):

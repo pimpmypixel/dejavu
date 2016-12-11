@@ -45,7 +45,6 @@ class Dejavu(object):
 			self.songhashes_set.add(song_hash)
 
 	def find_matches(self, samples):
-		log.debug('find_matches')
 		hashes = fingerprint.fingerprint(samples, self.config)
 		return self.db.return_matches(hashes)
 
@@ -56,7 +55,6 @@ class Dejavu(object):
 			Returns a dictionary with match information.
 		"""
 		# align by diffs
-		log.debug('align_matches')
 		diff_counter = {}
 		largest = 0
 		largest_count = 0
@@ -75,15 +73,14 @@ class Dejavu(object):
 				song_id = sid
 
 		song = self.db.get_song_by_id(song_id)
-		if song:
-			songname = song.get(Dejavu.SONG_NAME, None)
-		else:
+		if song is None:
 			return None
-
 		# return match info
 		nseconds = round(float(largest) / self.config.get('fingerprint').get('samplerate') *
 						 self.config.get('fingerprint').get('window_size') *
 						 self.config.get('fingerprint').get('overlap_ratio'), 5)
+		# self.log_event()
+		self.log_match(song_id, largest_count, int(largest), nseconds)
 		song = {
 			Dejavu.SONG_ID: song_id,
 			Dejavu.SONG_NAME: songname,
@@ -94,12 +91,21 @@ class Dejavu(object):
 		return song
 
 	def recognize(self, recognizer, *options, **kwoptions):
-		log.debug('recognize')
 		r = recognizer(self)
 		return r.recognize(*options, **kwoptions)
 
-	def log_event(self, session, ip, remote, message):
-		self.db.log_event(session, ip, remote, message)
+	def log_event(self, key, value):
+		self.db.log_event(self.config.get('sessionid'), key, value)
+
+	def create_session(self, config, vpn, remote):
+		self.config['sessionid'] = self.db.create_session(config, self.config.get('session'), vpn, remote)
+		return
+
+	def log_match(self, song_id, confidence, offset, offset_secs):
+		return self.db.log_match(self.config.get('sessionid'), song_id, confidence, offset, offset_secs)
+
+	def close_db(self):
+		self.db.close()
 
 
 def chunkify(lst, n):
