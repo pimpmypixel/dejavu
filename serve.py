@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore")
 shouldrun = False
 
 def getConguration():
-	db = os.path.dirname(__file__) + "conf/database.json"
+	db = os.path.dirname(__file__) + "/conf/database.json"
 	with open(db) as f:
 		config['database'] = json.load(f)
 		try:
@@ -92,11 +92,13 @@ class myHandler(BaseHTTPRequestHandler, Dejavu):
 		self.end_headers()
 		if v == 'on':
 			print "listen"
+			blinkLed(5)
 			self.wfile.write("Now listening<br><a href='"+url+"?off'>off</a>")
 			global shouldrun
 			shouldrun = True
 		elif v == 'off':
 			print "off"
+			blinkLed(5)
 			self.wfile.write("Stopped listening<br><a href='"+url+"?on'>on</a>")
 			shouldrun = False
 		else:
@@ -121,8 +123,7 @@ try:
 		config = getConguration()
 		djv = Dejavu(config)
 		djv.create_session(config['fingerprint']['id'], config['vpn_ip'], config['remote_ip'])
-		print 'Session created'
-		print config['session']
+		print 'Session '+str(config['session'])
 		djv.log_event('action', 'boot')
 		atexit.register(exit_handler, djv)
 		print 'Start listening: http://'+str(config['vpn_ip'])+':'+str(PORT_NUMBER)+'/?on'
