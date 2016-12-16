@@ -73,14 +73,15 @@ class Dejavu(object):
 				song_id = sid
 
 		song = self.db.get_song_by_id(song_id)
-		if song is None:
-			return None
+		print largest_count
 		# return match info
 		nseconds = round(float(largest) / self.config.get('fingerprint').get('samplerate') *
 						 self.config.get('fingerprint').get('window_size') *
 						 self.config.get('fingerprint').get('overlap_ratio'), 5)
-		# self.log_event()
 		self.log_match(song_id, largest_count, int(largest), nseconds)
+		if song is None:
+			return None
+		# self.log_event()
 		song = {
 			Dejavu.SONG_ID: song_id,
 			Dejavu.SONG_NAME: songname,

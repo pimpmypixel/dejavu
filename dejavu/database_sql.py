@@ -248,7 +248,7 @@ class SQLDatabase(Database):
 		"""
 		Insert a match row into database.
 		"""
-		print self.LOG_MATCH,(sessionid, int(round(time.time() * 1000)), song_id, confidence, offset, offset_secs)
+#		print self.LOG_MATCH,(sessionid, int(round(time.time() * 1000)), song_id, confidence, offset, offset_secs)
 		with self.cursor() as cur:
 			cur.execute(self.LOG_MATCH,
 						(int(sessionid), int(round(time.time() * 1000)), song_id, confidence, offset, offset_secs))
