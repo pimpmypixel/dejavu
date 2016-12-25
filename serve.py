@@ -20,9 +20,14 @@ PORT_NUMBER = 8000
 config = {}
 warnings.filterwarnings("ignore")
 shouldrun = False
+redled = "XIO-P0"
 
 def getConguration():
 	db = os.path.dirname(__file__) + "/conf/database.json"
+	global pause
+	pause = .5
+	global listen
+	listen = 1
 	with open(db) as f:
 		config['database'] = json.load(f)
 		try:
@@ -41,6 +46,7 @@ def getConguration():
 				config['session'] = shortuuid.uuid()
 				config['remote_ip'] = ipgetter.myip()
 				config['vpn_ip'] = ni.ifaddresses('tun0')[2][0]['addr']
+				print config
 				config['fingerprint']['amp_min'] = 10
 				config['fingerprint']['plot'] = 0
 				config['verbose'] = False
@@ -56,11 +62,11 @@ def getConguration():
 			print "MySQL Error: %s" % str(e)
 
 def blinkLed(blinks):
-	GPIO.setup("XIO-P0", GPIO.OUT)
+	GPIO.setup(redled, GPIO.OUT)
 	for j in range(1, blinks):
-		GPIO.output("XIO-P0", GPIO.LOW)
+		GPIO.output(redled, GPIO.LOW)
 		time.sleep(0.05)
-		GPIO.output("XIO-P0", GPIO.HIGH)
+		GPIO.output(redled, GPIO.HIGH)
 		time.sleep(0.05)
 	GPIO.cleanup()
 	return
@@ -82,32 +88,57 @@ def check_vpn():
 		response = None
 	return response
 
-class myHandler(BaseHTTPRequestHandler, Dejavu):
+class webHandler(BaseHTTPRequestHandler, Dejavu):
 	def do_GET(self):
+		global pause
 		url = "http://"+str(config['vpn_ip'])+":"+str(PORT_NUMBER)
 		p = self.path
 		v = urlparse(p).query
 		self.send_response(200)
 		self.send_header('Content-type','text/html')
 		self.end_headers()
+        	#self.wfile.write('User-agent: %s\n' % str(self.headers['user-agent']))
+		djv.log_event('agent', str(self.headers['user-agent']))
 		if v == 'on':
+			djv.log_event('listen', 'on')
 			print "listen"
 			blinkLed(5)
-			self.wfile.write("Now listening<br><a href='"+url+"?off'>off</a>")
+			self.wfile.write("<h2>Now listening<br><a href='"+url+"?off'>off</a></h2>")
 			global shouldrun
 			shouldrun = True
 		elif v == 'off':
+			djv.log_event('listen', 'off')
 			print "off"
 			blinkLed(5)
-			self.wfile.write("Stopped listening<br><a href='"+url+"?on'>on</a>")
+			self.wfile.write("<h2>Stopped listening<br><a href='"+url+"?on'>on</a></h2>")
 			shouldrun = False
+		elif v == 'restart':
+			djv.log_event('action', 'restart')
+			print "restart"
+			blinkLed(10)
+			self.wfile.write("<h2>Restarting</h2>")
+			os.system('reboot')
+		elif v.startswith("pause="):
+			v = v.replace("pause=", "")
+			v = float(v)
+			if isinstance(v, float):
+				global pause
+				pause = float(v)
+				djv.log_event('pause', pause)
+		elif v.startswith("listen="):
+			v = v.replace("listen=", "")
+			v = float(v)
+			if isinstance(v, float):
+				global listen
+				listen = float(v)
+				djv.log_event('listen', listen)
 		else:
 			self.wfile.write("welcome")
 		return
 	def log_message(self, format, *args):
 		return
 
-server = HTTPServer(('', PORT_NUMBER), myHandler)
+server = HTTPServer(('', PORT_NUMBER), webHandler)
 thread = threading.Thread(target = server.serve_forever)
 thread.daemon = True
 
@@ -119,35 +150,34 @@ except KeyboardInterrupt:
 
 try:
 	if check_vpn() is not None:
-		print "vpn connection"
-		config = getConguration()
-		djv = Dejavu(config)
-		djv.create_session(config['fingerprint']['id'], config['vpn_ip'], config['remote_ip'])
-		print 'Session '+str(config['session'])
-		djv.log_event('action', 'boot')
-		atexit.register(exit_handler, djv)
-		print 'Start listening: http://'+str(config['vpn_ip'])+':'+str(PORT_NUMBER)+'/?on'
-		print 'Stop listening: http://'+str(config['vpn_ip'])+':'+str(PORT_NUMBER)+'/?off'
-		if __name__ == '__main__':
-			a = datetime.now()
-			listen = 1
-			pause = .5
-			it = 1
-			try:
-				while True:
-					if(shouldrun):
-						blinkLed(2)
-						song = djv.recognize(MicrophoneRecognizer, seconds=listen)
-						if song is not None:
-							djv.log_event('match', str(song['song_id']))
-							print "Recognized %s\n" % (song)
-							blinkLed(5)
-					it += 1
-					time.sleep(pause)
-			except KeyboardInterrupt:
-				pass
-
-
+		try:
+			config = getConguration()
+			djv = Dejavu(config)
+			djv.create_session(config['fingerprint']['id'], config['vpn_ip'], config['remote_ip'])
+			print 'Session '+str(config['session'])
+			djv.log_event('action', 'boot')
+			atexit.register(exit_handler, djv)
+			print 'Start listening: http://'+str(config['vpn_ip'])+':'+str(PORT_NUMBER)+'/?on'
+			print 'Stop listening: http://'+str(config['vpn_ip'])+':'+str(PORT_NUMBER)+'/?off'
+			if __name__ == '__main__':
+				a = datetime.now()
+				listen = 1
+				it = 1
+				try:
+					while True:
+						if(shouldrun):
+							blinkLed(2)
+							song = djv.recognize(MicrophoneRecognizer, seconds=listen)
+							if song is not None:
+								djv.log_event('match', str(song['song_id']))
+								print "Recognized %s\n" % (song)
+								blinkLed(5)
+						it += 1
+						time.sleep(pause)
+				except KeyboardInterrupt:
+					pass
+	        except KeyError:
+	            print "No config"
 except KeyboardInterrupt:
 	#djv.log_event('mysql_error', str(e.args[1]))
 	server.socket.close()

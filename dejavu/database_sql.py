@@ -77,9 +77,7 @@ class SQLDatabase(Database):
 																							  Database.FIELD_OFFSET,
 																							  Database.FIELD_OFFSET_SECS)
 
-	INSERT_SONG = "INSERT INTO %s (%s, %s) values (%%s, UNHEX(%%s));" % (SONGS_TABLENAME,
-																		 Database.FIELD_SONGNAME,
-																		 Database.FIELD_FILE_SHA1)
+	INSERT_SONG = "INSERT INTO %s (%s, %s) values (%%s, UNHEX(%%s));" % (SONGS_TABLENAME,Database.FIELD_SONGNAME,Database.FIELD_FILE_SHA1)
 
 	# inserts (ignores duplicates)
 	INSERT_FINGERPRINT = """
@@ -276,7 +274,7 @@ class SQLDatabase(Database):
 		database (be careful with that one!).
 		"""
 		# select all if no key
-		print(hash)
+		#print(hash)
 		query = self.SELECT_ALL if hash is None else self.SELECT
 
 		with self.cursor() as cur:

@@ -55,10 +55,19 @@ class MicrophoneRecognizer(BaseRecognizer):
 		self.data = [[] for i in range(self.config['config']['soundcard']['channels'])]
 
 	def process_recording(self):
-		data = self.stream.read(self.config['config']['soundcard']['chunksize'])
-		nums = np.fromstring(data, np.int16)
-		for c in range(self.config['config']['soundcard']['channels']):
-			self.data[c].extend(nums[c::self.config['config']['soundcard']['chunksize']])
+		try:
+			data = self.stream.read(self.config['config']['soundcard']['chunksize'])
+			nums = np.fromstring(data, np.int16)
+			for c in range(self.config['config']['soundcard']['channels']):
+				self.data[c].extend(nums[c::self.config['config']['soundcard']['chunksize']])
+		except IOError as ex:
+			if ex[1] != pyaudio.paInputOverflowed:
+		        	raise
+		    	data = '\x00' * chunk
+
+
+
+
 
 	def stop_recording(self):
 		self.stream.stop_stream()

@@ -73,12 +73,11 @@ class Dejavu(object):
 				song_id = sid
 
 		song = self.db.get_song_by_id(song_id)
-		print largest_count
+		#print largest_count
 		# return match info
 		nseconds = round(float(largest) / self.config.get('fingerprint').get('samplerate') *
 						 self.config.get('fingerprint').get('window_size') *
 						 self.config.get('fingerprint').get('overlap_ratio'), 5)
-		self.log_match(song_id, largest_count, int(largest), nseconds)
 		if song is None:
 			return None
 		# self.log_event()
@@ -89,6 +88,7 @@ class Dejavu(object):
 			Dejavu.OFFSET: int(largest),
 			Dejavu.OFFSET_SECS: nseconds,
 			Database.FIELD_FILE_SHA1: song.get(Database.FIELD_FILE_SHA1, None), }
+		self.log_match(song_id, largest_count, int(largest), nseconds)
 		return song
 
 	def recognize(self, recognizer, *options, **kwoptions):
