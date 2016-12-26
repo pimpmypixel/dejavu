@@ -63,11 +63,7 @@ class MicrophoneRecognizer(BaseRecognizer):
 		except IOError as ex:
 			if ex[1] != pyaudio.paInputOverflowed:
 		        	raise
-		    	data = '\x00' * chunk
-
-
-
-
+		    	data = '\x00' * self.config['config']['soundcard']['chunksize']
 
 	def stop_recording(self):
 		self.stream.stop_stream()
@@ -81,7 +77,7 @@ class MicrophoneRecognizer(BaseRecognizer):
 		return self._recognize(*self.data)
 
 	def get_recorded_time(self):
-		return len(self.data[0]) / self.rate
+		return len(self.data[0]) / self.config['config']['fingerprint']['samplerate']
 
 	def recognize(self, seconds=2):
 		self.start_recording()
@@ -89,6 +85,7 @@ class MicrophoneRecognizer(BaseRecognizer):
 			'chunksize'] * seconds)):
 			self.process_recording()
 		self.stop_recording()
+		#print self.get_recorded_time()
 		return self.recognize_recording()
 
 

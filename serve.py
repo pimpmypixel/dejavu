@@ -62,13 +62,13 @@ def getConguration():
 			print "MySQL Error: %s" % str(e)
 
 def blinkLed(blinks):
-	GPIO.setup(redled, GPIO.OUT)
-	for j in range(1, blinks):
-		GPIO.output(redled, GPIO.LOW)
-		time.sleep(0.05)
-		GPIO.output(redled, GPIO.HIGH)
-		time.sleep(0.05)
-	GPIO.cleanup()
+	#GPIO.setup(redled, GPIO.OUT)
+	#for j in range(1, blinks):
+	#	GPIO.output(redled, GPIO.LOW)
+	#	time.sleep(0.05)
+	#	GPIO.output(redled, GPIO.HIGH)
+	#	time.sleep(0.05)
+	#GPIO.cleanup()
 	return
 
 def exit_handler(djv):
@@ -165,6 +165,7 @@ try:
 				it = 1
 				try:
 					while True:
+						#print listen,pause
 						if(shouldrun):
 							blinkLed(2)
 							song = djv.recognize(MicrophoneRecognizer, seconds=listen)
