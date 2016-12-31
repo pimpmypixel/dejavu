@@ -74,7 +74,6 @@ class MicrophoneRecognizer(BaseRecognizer):
 		self.data = [[] for i in range(channels)]
 
 	def process_recording(self):
-		log.debug('process_recording')
 		data = self.stream.read(self.chunksize)
 		nums = np.fromstring(data, np.int16)
 		for c in range(self.channels):

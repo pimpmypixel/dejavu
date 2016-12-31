@@ -98,8 +98,18 @@ class Dejavu(object):
 		r = recognizer(self)
 		return r.recognize(*options, **kwoptions)
 
-	def log_event(self, session, ip, remote, message):
-		self.db.log_event(session, ip, remote, message)
+	def log_event(self, key, value):
+		self.db.log_event(self.config.get('sessionid'), key, value)
+
+	def create_session(self, config, vpn, remote):
+		self.config['sessionid'] = self.db.create_session(config, self.config.get('session'), vpn, remote)
+		return
+
+	def log_match(self, song_id, confidence, offset, offset_secs):
+		return self.db.log_match(self.config.get('sessionid'), song_id, confidence, offset, offset_secs)
+
+	def close_db(self):
+		self.db.close()
 
 
 def chunkify(lst, n):

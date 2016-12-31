@@ -9,13 +9,18 @@ class Database(object):
 	FIELD_SONG_ID = 'song_id'
 	FIELD_SONGNAME = 'song_name'
 	FIELD_OFFSET = 'offset'
+	FIELD_OFFSET_SECS = 'offset_secs'
 	FIELD_HASH = 'hash'
-	IP = 'vpn'
-	REMOTE = 'remote'
-	ID = 'id'
-	DATE = 'date'
-	MESSAGE = 'message'
-	SESSION = 'session'
+	FIELD_IP = 'vpn'
+	FIELD_REMOTE = 'remote'
+	FIELD_ID = 'id'
+	FIELD_DATE = 'date'
+	FIELD_MESSAGE = 'message'
+	FIELD_SESSION = 'session'
+	FIELD_CONFIG = 'config'
+	FIELD_KEY = 'key'
+	FIELD_VALUE = 'value'
+	FIELD_CONFIDENCE = 'confidence'
 
 	# Name of your Database subclass, this is used in configuration
 	# to refer to your class
@@ -110,7 +115,21 @@ class Database(object):
 		pass
 
 	@abc.abstractmethod
-	def log_event(self, session, vpn, remote, message):
+	def log_event(self, session, key, value):
+		"""
+		db log
+		"""
+		pass
+
+	@abc.abstractmethod
+	def create_session(self, config, session, vpn, remote):
+		"""
+		db log
+		"""
+		pass
+
+	@abc.abstractmethod
+	def log_match(self, sessionid, song_id, confidence, offset, offset_secs):
 		"""
 		db log
 		"""

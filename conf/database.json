@@ -1,6 +1,6 @@
 {
-    "host": "10.0.1.6",
-    "user": "adkiller",
-    "passwd": "adkiller",
-    "db": "admin"
+	"host": "virum.liquid-i.com",
+	"user": "adkiller",
+	"passwd": "adkiller",
+	"db": "admin"
 }
