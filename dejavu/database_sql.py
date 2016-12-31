@@ -62,20 +62,20 @@ class SQLDatabase(Database):
 		Database.FIELD_REMOTE)
 
 	LOG_EVENT = "INSERT INTO %s (%s, %s, %s, `%s`, %s) values (NULL, %%s, %%s, %%s, %%s);" % (EVENTS_TABLENAME,
-																							  Database.FIELD_ID,
-																							  Database.FIELD_SESSION,
-																							  Database.FIELD_DATE,
-																							  Database.FIELD_KEY,
-																							  Database.FIELD_VALUE)
+														  Database.FIELD_ID,
+														  Database.FIELD_SESSION,
+														  Database.FIELD_DATE,
+														  Database.FIELD_KEY,
+														  Database.FIELD_VALUE)
 
 	LOG_MATCH = "INSERT INTO %s (%s, %s, %s, %s,%s, %s, %s) values (NULL, %%s, %%s, %%s, %%s, %%s, %%s);" % (MATCH_TABLENAME,
-																							  Database.FIELD_ID,
-																							  Database.FIELD_SESSION,
-																							  Database.FIELD_DATE,
-																							  Database.FIELD_SONG_ID,
-																							  Database.FIELD_CONFIDENCE,
-																							  Database.FIELD_OFFSET,
-																							  Database.FIELD_OFFSET_SECS)
+														  Database.FIELD_ID,
+														  Database.FIELD_SESSION,
+														  Database.FIELD_DATE,
+														  Database.FIELD_SONG_ID,
+														  Database.FIELD_CONFIDENCE,
+														  Database.FIELD_OFFSET,
+														  Database.FIELD_OFFSET_SECS)
 
 	INSERT_SONG = "INSERT INTO %s (%s, %s) values (%%s, UNHEX(%%s));" % (SONGS_TABLENAME,Database.FIELD_SONGNAME,Database.FIELD_FILE_SHA1)
 
@@ -87,8 +87,8 @@ class SQLDatabase(Database):
 		   Database.FIELD_HASH, Database.FIELD_SONG_ID, Database.FIELD_OFFSET)
 
 	SELECT = "SELECT %s, %s FROM %s WHERE %s = UNHEX(%%s);" % (Database.FIELD_SONG_ID,
-															   Database.FIELD_OFFSET, FINGERPRINTS_TABLENAME,
-															   Database.FIELD_HASH)
+											Database.FIELD_OFFSET, FINGERPRINTS_TABLENAME,
+											Database.FIELD_HASH)
 
 	SELECT_MULTIPLE = """
         SELECT HEX(%s), %s, %s FROM %s WHERE %s IN (%%s);
